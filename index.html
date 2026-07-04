@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marquee — Organization Event Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15161B;
+    --bg-raised:#1D1F27;
+    --bg-inset:#101116;
+    --line:#2C2E38;
+    --line-strong:#3C3F4C;
+    --gold:#E8B54A;
+    --gold-dim:#8C6E2E;
+    --teal:#5EC8C0;
+    --coral:#E2604F;
+    --text:#F3F1EC;
+    --text-dim:#9A9CA8;
+    --text-faint:#5F6270;
+    --font-display:'Oswald', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold-dim);color:var(--text);}
+
+  /* ---------- MARQUEE HEADER ---------- */
+  .marquee-header{
+    background:var(--bg-inset);
+    border-bottom:1px solid var(--line);
+    padding:0;
+    overflow:hidden;
+    position:relative;
+  }
+  .marquee-bulbs{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 24px 0;
+  }
+  .bulb{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--gold-dim);
+    animation:blink 2.4s infinite;
+  }
+  @keyframes blink{
+    0%,100%{background:var(--gold-dim); box-shadow:none;}
+    50%{background:var(--gold); box-shadow:0 0 6px 1px rgba(232,181,74,0.7);}
+  }
+  .marquee-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 28px 18px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:0.5px;
+    margin:0;
+    color:var(--gold);
+  }
+  .brand span{
+    font-size:12px;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+  }
+  .marquee-stats{
+    display:flex;
+    gap:28px;
+    flex-wrap:wrap;
+  }
+  .mstat{
+    text-align:right;
+  }
+  .mstat .num{
+    font-family:var(--font-mono);
+    font-size:19px;
+    font-weight:500;
+    color:var(--text);
+  }
+  .mstat .lbl{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-faint);
+  }
+  .mstat.accent .num{color:var(--gold);}
+  .mstat.good .num{color:var(--teal);}
+  .mstat.warn .num{color:var(--coral);}
+
+  /* ---------- LAYOUT ---------- */
+  .app{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    min-height:calc(100vh - 96px);
+  }
+  .sidebar{
+    background:var(--bg-inset);
+    border-right:1px solid var(--line);
+    padding:22px 14px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 14px;
+    border-radius:4px;
+    font-size:14px;
+    font-weight:500;
+    color:var(--text-dim);
+    cursor:pointer;
+    margin-bottom:4px;
+    transition:background .15s, color .15s;
+    border-left:2px solid transparent;
+  }
+  .nav-item:hover{background:var(--bg-raised); color:var(--text);}
+  .nav-item.active{
+    background:var(--bg-raised);
+    color:var(--gold);
+    border-left:2px solid var(--gold);
+  }
+  .nav-divider{
+    height:1px; background:var(--line); margin:14px 4px;
+  }
+  .nav-note{
+    font-size:11px; color:var(--text-faint); padding:8px 14px; line-height:1.5;
+  }
+
+  .main{
+    padding:28px 32px 60px;
+    max-width:1180px;
+  }
+  .view{display:none;}
+  .view.active{display:block;}
+
+  h2.page-title{
+    font-family:var(--font-display);
+    font-size:22px;
+    font-weight:500;
+    letter-spacing:0.3px;
+    margin:0 0 4px;
+  }
+  .page-sub{
+    color:var(--text-dim);
+    font-size:13px;
+    margin:0 0 26px;
+  }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    font-family:var(--font-body);
+    font-size:13px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:4px;
+    border:1px solid var(--line-strong);
+    background:var(--bg-raised);
+    color:var(--text);
+    cursor:pointer;
+    transition:all .15s;
+    letter-spacing:0.2px;
+  }
+  .btn:hover{border-color:var(--gold-dim); color:var(--gold);}
+  .btn-primary{
+    background:var(--gold);
+    border-color:var(--gold);
+    color:#1A1500;
+  }
+  .btn-primary:hover{background:#F2C562; color:#1A1500;}
+  .btn-danger{border-color:var(--coral); color:var(--coral); background:transparent;}
+  .btn-danger:hover{background:rgba(226,96,79,0.12);}
+  .btn-ghost{background:transparent; border-color:transparent; color:var(--text-dim);}
+  .btn-ghost:hover{color:var(--text); background:var(--bg-raised);}
+  .btn-sm{padding:6px 12px; font-size:12px;}
+
+  /* ---------- DASHBOARD ---------- */
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:14px;
+    margin-bottom:30px;
+  }
+  .stat-card{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px 18px;
+  }
+  .stat-card .lbl{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    margin-bottom:8px;
+  }
+  .stat-card .val{
+    font-family:var(--font-mono);
+    font-size:26px;
+    font-weight:500;
+  }
+  .stat-card .sub{font-size:12px; color:var(--text-dim); margin-top:4px;}
+  .stat-card.gold .val{color:var(--gold);}
+  .stat-card.teal .val{color:var(--teal);}
+  .stat-card.coral .val{color:var(--coral);}
+
+  .section-block{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:20px;
+  }
+  .section-block h3{
+    font-family:var(--font-display);
+    font-size:15px;
+    font-weight:500;
+    margin:0 0 14px;
+    color:var(--text);
+  }
+  .status-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  .status-row:last-child{border-bottom:none;}
+  .status-bar-track{
+    flex:1;
+    height:6px;
+    background:var(--bg-inset);
+    border-radius:3px;
+    margin:0 14px;
+    overflow:hidden;
+  }
+  .status-bar-fill{height:100%; border-radius:3px;}
+
+  /* ---------- TOOLBAR / FILTERS ---------- */
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:18px;
+    justify-content:space-between;
+  }
+  .filters{display:flex; gap:8px; flex-wrap:wrap;}
+  input, select, textarea{
+    font-family:var(--font-body);
+    background:var(--bg-inset);
+    border:1px solid var(--line-strong);
+    color:var(--text);
+    border-radius:4px;
+    padding:9px 12px;
+    font-size:13px;
+    outline:none;
+    transition:border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:var(--gold);}
+  input::placeholder{color:var(--text-faint);}
+  .search-input{width:220px;}
+
+  /* ---------- TABLE ---------- */
+  .table-wrap{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left;
+    padding:12px 16px;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:var(--text-faint);
+    border-bottom:1px solid var(--line);
+    background:var(--bg-inset);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  .ev-name{font-weight:600; color:var(--text);}
+  .ev-meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
+
+  .badge{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    white-space:nowrap;
+  }
+  .badge-planning{background:rgba(154,156,168,0.18); color:#B7B9C4;}
+  .badge-confirmed{background:rgba(94,200,192,0.16); color:var(--teal);}
+  .badge-inprogress{background:rgba(232,181,74,0.16); color:var(--gold);}
+  .badge-completed{background:rgba(94,200,192,0.16); color:var(--teal);}
+  .badge-cancelled{background:rgba(226,96,79,0.16); color:var(--coral);}
+  .badge-postponed{background:rgba(232,181,74,0.16); color:var(--gold);}
+
+  .prio-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:6px;}
+  .prio-low{background:var(--text-faint);}
+  .prio-medium{background:var(--teal);}
+  .prio-high{background:var(--gold);}
+  .prio-critical{background:var(--coral);}
+
+  .util-track{width:70px; height:5px; background:var(--bg-inset); border-radius:3px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px;}
+  .util-fill{height:100%; border-radius:3px;}
+
+  .row-actions{display:flex; gap:6px;}
+  .icon-btn{
+    background:transparent; border:1px solid transparent; color:var(--text-faint);
+    width:28px; height:28px; border-radius:4px; cursor:pointer; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--bg-inset); color:var(--text);}
+  .icon-btn.del:hover{color:var(--coral);}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-faint);
+  }
+  .empty-state .big{font-family:var(--font-display); font-size:18px; color:var(--text-dim); margin-bottom:6px;}
+
+  /* ---------- FORM (MODAL) ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(8,8,10,0.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 20px;
+    z-index:100;
+    overflow-y:auto;
+  }
+  .overlay.active{display:flex;}
+  .modal{
+    background:var(--bg-raised);
+    border:1px solid var(--line-strong);
+    border-radius:8px;
+    width:100%;
+    max-width:820px;
+    padding:0;
+    margin-bottom:40px;
+  }
+  .modal-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 26px;
+    border-bottom:1px solid var(--line);
+  }
+  .modal-head h3{
+    font-family:var(--font-display);
+    font-size:18px; font-weight:500; margin:0;
+  }
+  .modal-body{padding:24px 26px;}
+  .modal-foot{
+    display:flex; justify-content:flex-end; gap:10px;
+    padding:18px 26px; border-top:1px solid var(--line);
+  }
+
+  .form-section-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:1px;
+    color:var(--gold); margin:22px 0 12px; font-weight:600;
+  }
+  .form-section-title:first-child{margin-top:0;}
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 16px;}
+  .form-grid.g3{grid-template-columns:1fr 1fr 1fr;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{font-size:12px; color:var(--text-dim); font-weight:500;}
+  .field .hint{font-size:10.5px; color:var(--text-faint);}
+  textarea{resize:vertical; min-height:64px; font-family:var(--font-body);}
+
+  .formula-panel{
+    background:var(--bg-inset);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px 18px;
+    margin-top:22px;
+  }
+  .formula-panel .form-section-title{margin-top:0;}
+  .formula-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+    gap:14px;
+  }
+  .fstat .flabel{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;}
+  .fstat .fval{font-family:var(--font-mono); font-size:18px; font-weight:500; color:var(--gold);}
+  .fstat .fval.teal{color:var(--teal);}
+  .fstat .fval.coral{color:var(--coral);}
+
+  .close-x{background:none; border:none; color:var(--text-faint); font-size:20px; cursor:pointer; line-height:1; padding:4px;}
+  .close-x:hover{color:var(--text);}
+
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .form-grid, .form-grid.g3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="marquee-header">
+  <div class="marquee-bulbs" id="bulbRow"></div>
+  <div class="marquee-top">
+    <div class="brand">
+      <h1>Marquee</h1>
+      <span>Organization Event Management</span>
+    </div>
+    <div class="marquee-stats" id="headerStats"></div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="nav-item active" data-view="dashboard">Dashboard</div>
+    <div class="nav-item" data-view="events">All events</div>
+    <div class="nav-item" data-view="new">New event</div>
+    <div class="nav-divider"></div>
+    <div class="nav-note">Formulas recalculate live as you edit budget, attendee, and date fields.</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <div class="view active" id="view-dashboard">
+      <h2 class="page-title">Dashboard</h2>
+      <p class="page-sub">Portfolio overview across every event on the books.</p>
+      <div class="stat-grid" id="dashStats"></div>
+
+      <div class="section-block">
+        <h3>Events by status</h3>
+        <div id="statusBreakdown"></div>
+      </div>
+
+      <div class="section-block">
+        <h3>Coming up next</h3>
+        <div id="upcomingList"></div>
+      </div>
+    </div>
+
+    <!-- EVENTS LIST VIEW -->
+    <div class="view" id="view-events">
+      <h2 class="page-title">All events</h2>
+      <p class="page-sub">Every event record, with live budget and attendance formulas.</p>
+
+      <div class="toolbar">
+        <div class="filters">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by name, venue, organizer...">
+          <select id="filterStatus">
+            <option value="">All statuses</option>
+            <option>Planning</option>
+            <option>Confirmed</option>
+            <option>In progress</option>
+            <option>Completed</option>
+            <option>Postponed</option>
+            <option>Cancelled</option>
+          </select>
+          <select id="filterType">
+            <option value="">All types</option>
+          </select>
+          <select id="sortBy">
+            <option value="date_asc">Sort: date (soonest)</option>
+            <option value="date_desc">Sort: date (latest)</option>
+            <option value="name">Sort: name (A-Z)</option>
+            <option value="budget_desc">Sort: budget (high-low)</option>
+            <option value="util_desc">Sort: utilization (high-low)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="btnNewEvent">+ New event</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Venue</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Budget</th>
+              <th>Utilization</th>
+              <th>Attendees</th>
+              <th>Days to event</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="big">No events match</div>
+          <div>Try clearing filters or create your first event.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW/EDIT is modal-based, no separate static view needed but keep placeholder for nav -->
+    <div class="view" id="view-new"></div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">New event</h3>
+      <button class="close-x" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="eventForm">
+        <input type="hidden" id="eventId">
+
+        <div class="form-section-title">Event details</div>
+        <div class="form-grid">
+          <div class="field full">
+            <label for="f_name">Event name *</label>
+            <input type="text" id="f_name" placeholder="e.g. Q3 All-Hands Kickoff" required>
+          </div>
+          <div class="field">
+            <label for="f_type">Event type *</label>
+            <select id="f_type" required>
+              <option value="">Select type</option>
+              <option>Conference</option>
+              <option>Workshop</option>
+              <option>Seminar</option>
+              <option>Team building</option>
+              <option>Product launch</option>
+              <option>Fundraiser</option>
+              <option>Networking</option>
+              <option>Training</option>
+              <option>Celebration</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f_department">Organizing department *</label>
+            <input type="text" id="f_department" placeholder="e.g. Marketing" required>
+          </div>
+          <div class="field full">
+            <label for="f_description">Description</label>
+            <textarea id="f_description" placeholder="What is this event about?"></textarea>
+          </div>
+          <div class="field">
+            <label for="f_status">Status</label>
+            <select id="f_status">
+              <option>Planning</option>
+              <option>Confirmed</option>
+              <option>In progress</option>
+              <option>Completed</option>
+              <option>Postponed</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f_priority">Priority</label>
+            <select id="f_priority">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title">Schedule</div>
+        <div class="form-grid g3">
+          <div class="field">
+            <label for="f_startDate">Start date *</label>
+            <input type="date" id="f_startDate" required>
+          </div>
+          <div class="field">
+            <label for="f_startTime">Start time</label>
+            <input type="time" id="f_startTime">
+          </div>
+          <div class="field">
+            <label for="f_endDate">End date</label>
+            <input type="date" id="f_endDate">
+          </div>
+          <div class="field">
+            <label for="f_endTime">End time</label>
+            <input type="time" id="f_endTime">
+          </div>
+          <div class="field">
+            <label for="f_venueType">Venue type</label>
+            <select id="f_venueType">
+              <option>In-person</option>
+              <option>Virtual</option>
+              <option>Hybrid</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f_venue">Venue / location *</label>
+            <input type="text" id="f_venue" placeholder="e.g. Main Hall, or Zoom link" required>
+          </div>
+        </div>
+
+        <div class="form-section-title">Contact</div>
+        <div class="form-grid g3">
+          <div class="field">
+            <label for="f_contactName">Primary contact *</label>
+            <input type="text" id="f_contactName" placeholder="Full name">
+          </div>
+          <div class="field">
+            <label for="f_contactEmail">Contact email</label>
+            <input type="email" id="f_contactEmail" placeholder="name@org.com">
+          </div>
+          <div class="field">
+            <label for="f_contactPhone">Contact phone</label>
+            <input type="tel" id="f_contactPhone" placeholder="+1 555 000 0000">
+          </div>
+        </div>
+
+        <div class="form-section-title">Budget &amp; attendance</div>
+        <div class="form-grid g3">
+          <div class="field">
+            <label for="f_budgetAllocated">Budget allocated ($)</label>
+            <input type="number" id="f_budgetAllocated" min="0" step="1" placeholder="0" value="0">
+          </div>
+          <div class="field">
+            <label for="f_actualSpend">Actual spend so far ($)</label>
+            <input type="number" id="f_actualSpend" min="0" step="1" placeholder="0" value="0">
+          </div>
+          <div class="field">
+            <label for="f_expectedAttendees">Expected attendees</label>
+            <input type="number" id="f_expectedAttendees" min="0" step="1" placeholder="0" value="0">
+          </div>
+          <div class="field">
+            <label for="f_confirmedAttendees">Confirmed attendees</label>
+            <input type="number" id="f_confirmedAttendees" min="0" step="1" placeholder="0" value="0">
+          </div>
+          <div class="field">
+            <label for="f_sponsors">Sponsors (comma separated)</label>
+            <input type="text" id="f_sponsors" placeholder="e.g. Acme Corp, Local Cafe">
+          </div>
+          <div class="field">
+            <label for="f_tags">Tags (comma separated)</label>
+            <input type="text" id="f_tags" placeholder="e.g. internal, quarterly">
+          </div>
+          <div class="field full">
+            <label for="f_resources">Resources needed</label>
+            <textarea id="f_resources" placeholder="e.g. Projector, catering for 80, name badges"></textarea>
+          </div>
+          <div class="field full">
+            <label for="f_notes">Notes</label>
+            <textarea id="f_notes" placeholder="Anything else worth remembering"></textarea>
+          </div>
+        </div>
+
+        <div class="formula-panel">
+          <div class="form-section-title">Live formulas</div>
+          <div class="formula-grid" id="liveFormulas"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="cancelModal">Cancel</button>
+      <button class="btn btn-primary" id="saveEvent">Save event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- STATE (in-memory only) ---------------- */
+let events = [];
+let editingId = null;
+
+function uid(){ return 'ev_' + Math.random().toString(36).slice(2,10); }
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+function seedData(){
+  const t = new Date();
+  const plus = (days) => { const d=new Date(t); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); };
+  events = [
+    {
+      id: uid(), name:'Q3 All-Hands Kickoff', type:'Conference', department:'People Ops',
+      description:'Company-wide quarterly kickoff with leadership keynotes and team awards.',
+      status:'Confirmed', priority:'High',
+      startDate: plus(12), startTime:'09:00', endDate: plus(12), endTime:'17:00',
+      venueType:'In-person', venue:'Grand Ballroom, Riverside Convention Center',
+      contactName:'Dana Whitfield', contactEmail:'dana.w@orgmail.com', contactPhone:'+1 415 555 0148',
+      budgetAllocated:45000, actualSpend:18250, expectedAttendees:400, confirmedAttendees:361,
+      sponsors:'Northwind Coffee, Acme Print', tags:'internal, quarterly, flagship',
+      resources:'Stage AV, 400 chairs, catering, name badges, live stream setup',
+      notes:'CEO keynote confirmed for 10am slot.'
+    },
+    {
+      id: uid(), name:'New Hire Onboarding Workshop', type:'Training', department:'People Ops',
+      description:'Half-day onboarding for the July cohort of new hires.',
+      status:'Planning', priority:'Medium',
+      startDate: plus(5), startTime:'10:00', endDate: plus(5), endTime:'14:00',
+      venueType:'Hybrid', venue:'Training Room B / Zoom',
+      contactName:'Priya Nadar', contactEmail:'priya.n@orgmail.com', contactPhone:'+1 415 555 0122',
+      budgetAllocated:2500, actualSpend:640, expectedAttendees:28, confirmedAttendees:24,
+      sponsors:'', tags:'onboarding, monthly',
+      resources:'Laptops, welcome kits, lunch for 28',
+      notes:''
+    },
+    {
+      id: uid(), name:'Product Launch: Atlas v2', type:'Product launch', department:'Marketing',
+      description:'Public launch event for the Atlas v2 platform with press and partner invites.',
+      status:'In progress', priority:'Critical',
+      startDate: plus(2), startTime:'18:00', endDate: plus(2), endTime:'21:00',
+      venueType:'In-person', venue:'Skyline Loft, Downtown',
+      contactName:'Marcus Ellery', contactEmail:'marcus.e@orgmail.com', contactPhone:'+1 415 555 0197',
+      budgetAllocated:60000, actualSpend:52300, expectedAttendees:180, confirmedAttendees:172,
+      sponsors:'Vertex Cloud, Nimbus Analytics', tags:'external, press, flagship',
+      resources:'Stage, lighting rig, press kits, photographer, open bar',
+      notes:'Press list finalized. Waiting on final AV run-through Thursday.'
+    },
+    {
+      id: uid(), name:'Annual Charity Fun Run', type:'Fundraiser', department:'Community Relations',
+      description:'5K fun run supporting the regional literacy fund.',
+      status:'Completed', priority:'Medium',
+      startDate: plus(-20), startTime:'08:00', endDate: plus(-20), endTime:'11:00',
+      venueType:'In-person', venue:'Lakeside Park',
+      contactName:'Tomas Reyes', contactEmail:'tomas.r@orgmail.com', contactPhone:'+1 415 555 0110',
+      budgetAllocated:8000, actualSpend:7420, expectedAttendees:250, confirmedAttendees:268,
+      sponsors:'Riverside Bank', tags:'community, annual',
+      resources:'Course marshals, water stations, medals, t-shirts',
+      notes:'Raised $14,200 for the literacy fund.'
+    }
+  ];
+}
+seedData();
+
+/* ---------------- FORMULA ENGINE ---------------- */
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(todayStr());
+  const target = new Date(dateStr);
+  const diff = Math.round((target - today) / 86400000);
+  return diff;
+}
+function computeFormulas(ev){
+  const allocated = Number(ev.budgetAllocated) || 0;
+  const spend = Number(ev.actualSpend) || 0;
+  const expected = Number(ev.expectedAttendees) || 0;
+  const confirmed = Number(ev.confirmedAttendees) || 0;
+
+  const remaining = allocated - spend;
+  const utilization = allocated > 0 ? (spend / allocated) * 100 : 0;
+  const costPerAttendee = confirmed > 0 ? spend / confirmed : (expected > 0 ? spend / expected : 0);
+  const attendanceRate = expected > 0 ? (confirmed / expected) * 100 : 0;
+  const days = daysUntil(ev.startDate);
+
+  let durationLabel = '—';
+  if(ev.startDate){
+    const s = new Date(ev.startDate + 'T' + (ev.startTime || '00:00'));
+    const e = new Date((ev.endDate || ev.startDate) + 'T' + (ev.endTime || ev.startTime || '00:00'));
+    const hrs = (e - s) / 3600000;
+    if(!isNaN(hrs) && hrs >= 0){
+      durationLabel = hrs >= 24 ? (Math.round((hrs/24)*10)/10) + ' days' : Math.round(hrs*10)/10 + ' hrs';
+    }
+  }
+
+  return { remaining, utilization, costPerAttendee, attendanceRate, days, durationLabel };
+}
+function fmtCurrency(n){
+  return '$' + (Math.round(n*100)/100).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function fmtPct(n){ return (Math.round(n*10)/10) + '%'; }
+function statusClass(s){
+  return 'badge-' + s.toLowerCase().replace(/\s+/g,'');
+}
+function prioClass(p){ return 'prio-' + p.toLowerCase(); }
+function utilColor(u){
+  if(u >= 100) return 'var(--coral)';
+  if(u >= 75) return 'var(--gold)';
+  return 'var(--teal)';
+}
+
+/* ---------------- BULBS ---------------- */
+function renderBulbs(){
+  const row = document.getElementById('bulbRow');
+  let html = '';
+  for(let i=0;i<40;i++){
+    html += `<span class="bulb" style="animation-delay:${(i*0.06).toFixed(2)}s"></span>`;
+  }
+  row.innerHTML = html;
+}
+renderBulbs();
+
+/* ---------------- HEADER STATS ---------------- */
+function renderHeaderStats(){
+  const total = events.length;
+  const upcoming = events.filter(e => daysUntil(e.startDate) >= 0 && e.status !== 'Cancelled' && e.status !== 'Completed').length;
+  const totalBudget = events.reduce((s,e)=> s + (Number(e.budgetAllocated)||0), 0);
+  const totalSpend = events.reduce((s,e)=> s + (Number(e.actualSpend)||0), 0);
+
+  const el = document.getElementById('headerStats');
+  el.innerHTML = `
+    <div class="mstat"><div class="num">${total}</div><div class="lbl">Total events</div></div>
+    <div class="mstat accent"><div class="num">${upcoming}</div><div class="lbl">Upcoming</div></div>
+    <div class="mstat"><div class="num">${fmtCurrency(totalBudget)}</div><div class="lbl">Budget allocated</div></div>
+    <div class="mstat ${totalSpend > totalBudget ? 'warn':'good'}"><div class="num">${fmtCurrency(totalSpend)}</div><div class="lbl">Total spend</div></div>
+  `;
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  const totalBudget = events.reduce((s,e)=> s + (Number(e.budgetAllocated)||0), 0);
+  const totalSpend = events.reduce((s,e)=> s + (Number(e.actualSpend)||0), 0);
+  const avgUtil = events.length ? events.reduce((s,e)=> s + computeFormulas(e).utilization, 0) / events.length : 0;
+  const totalExpected = events.reduce((s,e)=> s + (Number(e.expectedAttendees)||0), 0);
+  const totalConfirmed = events.reduce((s,e)=> s + (Number(e.confirmedAttendees)||0), 0);
+
+  const stats = document.getElementById('dashStats');
+  stats.innerHTML = `
+    <div class="stat-card">
+      <div class="lbl">Total events</div>
+      <div class="val">${events.length}</div>
+      <div class="sub">across all departments</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="lbl">Budget allocated</div>
+      <div class="val">${fmtCurrency(totalBudget)}</div>
+      <div class="sub">${fmtCurrency(totalBudget-totalSpend)} remaining</div>
+    </div>
+    <div class="stat-card ${avgUtil>=90?'coral':'teal'}">
+      <div class="lbl">Avg. budget utilization</div>
+      <div class="val">${fmtPct(avgUtil)}</div>
+      <div class="sub">spend vs. allocation</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="lbl">Attendance rate</div>
+      <div class="val">${totalExpected>0 ? fmtPct((totalConfirmed/totalExpected)*100) : '—'}</div>
+      <div class="sub">${totalConfirmed} confirmed of ${totalExpected} expected</div>
+    </div>
+  `;
+
+  const statuses = ['Planning','Confirmed','In progress','Completed','Postponed','Cancelled'];
+  const colors = {Planning:'#9A9CA8', Confirmed:'#5EC8C0','In progress':'#E8B54A', Completed:'#5EC8C0', Postponed:'#E8B54A', Cancelled:'#E2604F'};
+  const breakdown = document.getElementById('statusBreakdown');
+  if(events.length === 0){
+    breakdown.innerHTML = `<div class="empty-state"><div class="big">No events yet</div><div>Create your first event to see the breakdown.</div></div>`;
+  } else {
+    breakdown.innerHTML = statuses.map(s => {
+      const count = events.filter(e=>e.status===s).length;
+      const pct = events.length ? (count/events.length)*100 : 0;
+      return `<div class="status-row">
+        <span style="width:110px;">${s}</span>
+        <div class="status-bar-track"><div class="status-bar-fill" style="width:${pct}%; background:${colors[s]};"></div></div>
+        <span style="width:70px; text-align:right; color:var(--text-dim);">${count} event${count===1?'':'s'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const upcoming = events
+    .filter(e => daysUntil(e.startDate) >= 0)
+    .sort((a,b)=> new Date(a.startDate) - new Date(b.startDate))
+    .slice(0,5);
+  const upcomingEl = document.getElementById('upcomingList');
+  if(upcoming.length === 0){
+    upcomingEl.innerHTML = `<div class="empty-state"><div class="big">Nothing on the horizon</div><div>All caught up, or events need scheduling.</div></div>`;
+  } else {
+    upcomingEl.innerHTML = upcoming.map(e => {
+      const f = computeFormulas(e);
+      return `<div class="status-row">
+        <span style="width:220px; font-weight:600;">${e.name}</span>
+        <span style="width:120px; color:var(--text-dim);">${e.startDate}</span>
+        <span style="width:100px;"><span class="badge ${statusClass(e.status)}">${e.status}</span></span>
+        <span style="flex:1; text-align:right; color:var(--gold); font-family:var(--font-mono);">${f.days} day${f.days===1?'':'s'} out</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ---------------- EVENTS TABLE ---------------- */
+function populateTypeFilter(){
+  const sel = document.getElementById('filterType');
+  const types = [...new Set(events.map(e=>e.type))].sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All types</option>' + types.map(t=>`<option ${t===current?'selected':''}>${t}</option>`).join('');
+}
+
+function getFilteredSortedEvents(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const statusF = document.getElementById('filterStatus').value;
+  const typeF = document.getElementById('filterType').value;
+  const sortBy = document.getElementById('sortBy').value;
+
+  let list = events.filter(e => {
+    const matchesQ = !q || (e.name.toLowerCase().includes(q) || e.venue.toLowerCase().includes(q) || e.department.toLowerCase().includes(q));
+    const matchesStatus = !statusF || e.status === statusF;
+    const matchesType = !typeF || e.type === typeF;
+    return matchesQ && matchesStatus && matchesType;
+  });
+
+  list.sort((a,b) => {
+    if(sortBy === 'date_asc') return new Date(a.startDate) - new Date(b.startDate);
+    if(sortBy === 'date_desc') return new Date(b.startDate) - new Date(a.startDate);
+    if(sortBy === 'name') return a.name.localeCompare(b.name);
+    if(sortBy === 'budget_desc') return (b.budgetAllocated||0) - (a.budgetAllocated||0);
+    if(sortBy === 'util_desc') return computeFormulas(b).utilization - computeFormulas(a).utilization;
+    return 0;
+  });
+
+  return list;
+}
+
+function renderEventsTable(){
+  populateTypeFilter();
+  const list = getFilteredSortedEvents();
+  const tbody = document.getElementById('eventsTableBody');
+  const emptyState = document.getElementById('emptyState');
+
+  if(list.length === 0){
+    tbody.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  tbody.innerHTML = list.map(e => {
+    const f = computeFormulas(e);
+    const daysLabel = f.days === null ? '—' : (f.days < 0 ? `${Math.abs(f.days)}d ago` : `${f.days}d`);
+    return `
+    <tr>
+      <td>
+        <div class="ev-name">${e.name}</div>
+        <div class="ev-meta">${e.type} · ${e.department}</div>
+      </td>
+      <td>${e.startDate || '—'}${e.startTime ? ' · ' + e.startTime : ''}</td>
+      <td>${e.venue || '—'}</td>
+      <td><span class="badge ${statusClass(e.status)}">${e.status}</span></td>
+      <td><span class="prio-dot ${prioClass(e.priority)}"></span>${e.priority}</td>
+      <td>${fmtCurrency(e.budgetAllocated)}</td>
+      <td>
+        <span class="util-track"><span class="util-fill" style="width:${Math.min(f.utilization,100)}%; background:${utilColor(f.utilization)};"></span></span>
+        <span style="font-family:var(--font-mono); font-size:12px;">${fmtPct(f.utilization)}</span>
+      </td>
+      <td>${e.confirmedAttendees}/${e.expectedAttendees}</td>
+      <td style="font-family:var(--font-mono); ${f.days!==null && f.days<=3 && f.days>=0 ? 'color:var(--coral);' : ''}">${daysLabel}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="Edit" onclick="openEditModal('${e.id}')">✎</button>
+          <button class="icon-btn del" title="Delete" onclick="deleteEvent('${e.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------------- FORM / MODAL ---------------- */
+const fieldIds = ['name','type','department','description','status','priority','startDate','startTime','endDate','endTime','venueType','venue','contactName','contactEmail','contactPhone','budgetAllocated','actualSpend','expectedAttendees','confirmedAttendees','sponsors','tags','resources','notes'];
+
+function openNewModal(){
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'New event';
+  document.getElementById('eventForm').reset();
+  document.getElementById('f_startDate').value = todayStr();
+  document.getElementById('f_priority').value = 'Medium';
+  document.getElementById('f_status').value = 'Planning';
+  document.getElementById('f_venueType').value = 'In-person';
+  updateLiveFormulas();
+  document.getElementById('formOverlay').classList.add('active');
+}
+
+function openEditModal(id){
+  const e = events.find(x=>x.id===id);
+  if(!e) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit event';
+  fieldIds.forEach(fid => {
+    const el = document.getElementById('f_' + fid);
+    if(el) el.value = e[fid] ?? '';
+  });
+  updateLiveFormulas();
+  document.getElementById('formOverlay').classList.add('active');
+}
+
+function closeModalFn(){
+  document.getElementById('formOverlay').classList.remove('active');
+}
+
+function collectFormData(){
+  const data = {};
+  fieldIds.forEach(fid => {
+    const el = document.getElementById('f_' + fid);
+    data[fid] = el.value;
+  });
+  return data;
+}
+
+function updateLiveFormulas(){
+  const data = collectFormData();
+  const f = computeFormulas(data);
+  const panel = document.getElementById('liveFormulas');
+  const daysLabel = f.days === null ? '—' : (f.days < 0 ? `${Math.abs(f.days)} days ago` : `${f.days} days`);
+  panel.innerHTML = `
+    <div class="fstat">
+      <div class="flabel">Budget remaining</div>
+      <div class="fval ${f.remaining < 0 ? 'coral':''}">${fmtCurrency(f.remaining)}</div>
+    </div>
+    <div class="fstat">
+      <div class="flabel">Budget utilization</div>
+      <div class="fval ${f.utilization>=100?'coral':(f.utilization>=75?'':'teal')}">${fmtPct(f.utilization)}</div>
+    </div>
+    <div class="fstat">
+      <div class="flabel">Cost per attendee</div>
+      <div class="fval teal">${fmtCurrency(f.costPerAttendee)}</div>
+    </div>
+    <div class="fstat">
+      <div class="flabel">Attendance rate</div>
+      <div class="fval teal">${fmtPct(f.attendanceRate)}</div>
+    </div>
+    <div class="fstat">
+      <div class="flabel">Days to event</div>
+      <div class="fval">${daysLabel}</div>
+    </div>
+    <div class="fstat">
+      <div class="flabel">Duration</div>
+      <div class="fval">${f.durationLabel}</div>
+    </div>
+  `;
+}
+
+function saveEventFn(){
+  const form = document.getElementById('eventForm');
+  if(!form.checkValidity()){
+    form.reportValidity();
+    return;
+  }
+  const data = collectFormData();
+  if(editingId){
+    const idx = events.findIndex(e=>e.id===editingId);
+    events[idx] = { ...events[idx], ...data };
+  } else {
+    events.push({ id: uid(), ...data });
+  }
+  closeModalFn();
+  renderAll();
+}
+
+function deleteEvent(id){
+  const e = events.find(x=>x.id===id);
+  if(!e) return;
+  if(confirm(`Delete "${e.name}"? This can't be undone.`)){
+    events = events.filter(x=>x.id!==id);
+    renderAll();
+  }
+}
+
+/* ---------------- NAV / VIEWS ---------------- */
+function switchView(view){
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  if(view === 'new'){
+    openNewModal();
+    // stay on whatever view was active behind the modal; default dashboard
+    document.getElementById('view-dashboard').classList.add('active');
+    document.querySelector('.nav-item[data-view="dashboard"]').classList.add('active');
+    document.querySelector('.nav-item[data-view="new"]').classList.remove('active');
+    return;
+  }
+  document.getElementById('view-' + view).classList.add('active');
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
+document.getElementById('btnNewEvent').addEventListener('click', openNewModal);
+document.getElementById('closeModal').addEventListener('click', closeModalFn);
+document.getElementById('cancelModal').addEventListener('click', closeModalFn);
+document.getElementById('saveEvent').addEventListener('click', saveEventFn);
+document.getElementById('formOverlay').addEventListener('click', (e) => { if(e.target.id === 'formOverlay') closeModalFn(); });
+
+['searchInput','filterStatus','filterType','sortBy'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderEventsTable);
+  document.getElementById(id).addEventListener('change', renderEventsTable);
+});
+
+['budgetAllocated','actualSpend','expectedAttendees','confirmedAttendees','startDate','startTime','endDate','endTime'].forEach(fid => {
+  document.getElementById('f_' + fid).addEventListener('input', updateLiveFormulas);
+});
+
+function renderAll(){
+  renderHeaderStats();
+  renderDashboard();
+  renderEventsTable();
+}
+renderAll();
+</script>
+</body>
+</html>
